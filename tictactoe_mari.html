@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Tic Tac Toe by Mari</title>
+
+		<style type="text/css">
+			body{
+			    margin:0px;
+			    background:#fff;
+			    font-family: fantasy;
+			}
+			.button {
+			    background-color: #008CBA; 
+			    color: #fff;
+			    border: none;			    
+			    padding: 15px 32px;
+			    text-align: center;
+			    text-decoration: none;
+			    display: inline-block;
+			    font-size: 26px;
+			    font-family: fantasy;
+			    bottom: 0;
+			}				
+			.result {
+			    height: 30px;
+			    text-align: center;
+			    color: #008CBA;
+				font-size: 50px;				
+			}
+			.header {
+			    margin: 0px auto;
+			    height: 50px;
+			    text-align: center;
+		        margin-top: 40px;
+			}
+			canvas{
+				border: 1px solid #008CBA;
+				position: absolute;
+				margin: auto;
+				top: 0;
+				bottom: 150px;
+				left: 0;
+				right: 0;
+				border-radius: 10px;
+			}
+		</style>
+
+		<script type="text/javascript">
+
+		var canvas, ctx;
+		var data;
+		var player;
+		
+		window.onload = function main(){
+
+			canvas = document.createElement("canvas");
+			canvas.width = canvas.height = 3*120 + 20;
+			ctx = canvas.getContext("2d");
+
+			document.body.appendChild(canvas);
+
+			canvas.addEventListener("mousedown", mouseDown);
+
+			init();
+			tick();
+		}
+
+	    //Draw the nine tiles
+		function init(){
+			if (data == null){
+				data = [];
+
+				for (var i = 0; i < 9; i++){
+					var x = (i % 3)*120 + 20;
+					var y = Math.floor(i/3)*120 + 20;
+					data.push(new Tile(x, y));
+				}
+			}
+			player = Tile.NOUGHT;
+		}
+
+		function CheckWinner(player) {
+	        if ((data[0].getPlayer() === player &&
+	            data[1].getPlayer() === player &&
+	            data[2].getPlayer() === player) ||
+	            (data[3].getPlayer() === player &&
+	            data[4].getPlayer() === player &&
+	            data[5].getPlayer() === player) ||
+	            (data[6].getPlayer() === player &&
+	            data[7].getPlayer() === player &&
+	            data[8].getPlayer() === player) ||
+	            (data[0].getPlayer() === player &&
+	            data[3].getPlayer() === player &&
+	            data[6].getPlayer() === player) ||
+	            (data[1].getPlayer() === player &&
+	            data[4].getPlayer() === player &&
+	            data[7].getPlayer() === player) ||
+	            (data[2].getPlayer() === player &&
+	            data[5].getPlayer() === player &&
+	            data[8].getPlayer() === player) ||
+	            (data[0].getPlayer() === player &&
+	            data[4].getPlayer() === player &&
+	            data[8].getPlayer() === player) ||
+	            (data[2].getPlayer() === player &&
+	            data[4].getPlayer() === player &&
+	            data[6].getPlayer() === player))
+	        {
+	         	displayWinner(player);
+	         	gameOver();
+	        }
+	    }
+
+	    function displayWinner(player){
+			var winner = player === Tile.NOUGHT ? "NOUGHT" : "CROSS";
+         	var s = document.getElementById('result');
+        	s.innerText = winner + " WINS!";	    	
+	    }
+
+	    function gameOver(){
+	    	canvas.removeEventListener("mousedown", mouseDown);
+	    }
+
+		function tick(){
+			window.requestAnimationFrame(tick);
+
+			update();
+			render();
+		}
+
+		function update(){
+			for(var i = data.length; i--;){
+				data[i].update();
+			}
+		}
+
+		function render(){
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			for(var i = data.length; i--;){
+				data[i].draw(ctx);
+			}
+		}
+
+		function mouseDown(evt){ //event
+			var el = evt.target; //target is the canvas
+
+			var px = evt.clientX - el.offsetLeft;
+			var py = evt.clientY - el.offsetTop;
+
+			if(px % 120 >= 20 && py % 120 >= 20){
+				var idx = Math.floor(px/120);
+				idx += Math.floor(py/120)*3;		
+
+				if(data[idx].hasData()){
+					return;
+				}
+				data[idx].flip(player);
+
+				CheckWinner(player);
+
+				player = player === Tile.NOUGHT ? Tile.CROSS : Tile.NOUGHT;				
+			}
+
+		} 
+
+		function Tile(x,y){
+
+			var x =x, y = y;
+
+			var tile = Tile.BLANK;
+
+			var anim = 0;
+
+			if(tile == null){
+				var _c = document.createElement("canvas");
+				_c.width = _c.height = 100;
+				_ctx = _c.getContext("2d");
+
+				_ctx.top = 50;
+				_ctx.fillStyle = "#008CBA";
+				_ctx.lineWidth = 16;
+				_ctx.strokeStyle = "white";
+				_ctx.lineCap = "round";
+
+				//Blank
+
+				_ctx.fillRect(0, 0, 100, 100);
+				Tile.BLANK = new Image();
+				Tile.BLANK.src = _c.toDataURL();
+		
+
+				//Nought
+				_ctx.fillRect(0, 0, 100, 100);
+
+				//Methods to draw polygons
+				_ctx.beginPath();
+				_ctx.arc(50, 50, 30, 0, 2*Math.PI); 
+				_ctx.stroke();
+
+				Tile.NOUGHT = new Image();
+				Tile.NOUGHT.src = _c.toDataURL();
+
+
+				//Cross
+
+				_ctx.fillRect(0, 0, 100, 100);
+
+				//Methods to draw polygons
+				_ctx.beginPath();
+				_ctx.moveTo(20, 20);
+				_ctx.lineTo(80, 80);
+				_ctx.moveTo(80, 20);
+				_ctx.lineTo(20, 80);
+				_ctx.stroke();
+
+				Tile.CROSS = new Image();
+				Tile.CROSS.src = _c.toDataURL();
+
+				tile = Tile.BLANK;		
+			}
+
+			this.getPlayer = function(){
+				return tile;
+			}			
+
+			this.hasData = function(){
+				return tile !== Tile.BLANK;
+			}
+
+			this.flip = function(next){
+				tile = next;
+				anim = 1;			
+			}
+
+			this.update = function(){
+				if(anim > 0){
+					anim -= 0.2;
+				}
+			}
+
+			this.draw = function(ctx){
+				if(anim <= 0){
+					ctx.drawImage(tile, x, y);
+					return;	
+				}
+
+				var res = 2; //resolution
+
+				var t = anim > 0.5 ? Tile.BLANK : tile;
+				var p = -Math.abs(2*anim - 1) + 1;
+
+				for(var i = 0; i < 100; i += res){
+
+					var j = 50 - (anim >0.5 ? 100 - i : i);
+
+					ctx.drawImage(t, i, 0, res, 100,
+						x + i - p*i + 50*p, //flip horizontally
+						y - j*p*0.2,
+						res,
+						100 + j*p*0.4
+						);
+
+				}
+			}
+		}
+		</script>
+	</head>
+	<body>
+		<div class="header">			
+			<button class="button" onClick="window.location.reload()">Restart Game</button>
+		</div>
+		<br/>
+		<div id="result" class="result"></div>
+	</body>
+</html>
